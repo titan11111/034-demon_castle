@@ -2,127 +2,42 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>伝説の魔王城 - Legend of the Demon Castle</title>
-    <meta name="description" content="母の愛が試される幻想的なビジュアルノベルゲーム">
-    <meta name="theme-color" content="#1a0033">
-    
-    <!-- アイコン設定 -->
-    <link rel="icon" type="image/x-icon" href="./favicon.ico">
-    <link rel="apple-touch-icon" href="./icon-192.png">
-    
-    <!-- CSS読み込み -->
-    <link rel="stylesheet" href="./style.css">
-    
-    <!-- PWA対応 -->
-    <link rel="manifest" href="./manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔王城と母</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- タイトル画面 -->
+
     <div id="titleScreen" class="screen active">
         <div class="title-content">
-            <img class="castle-bg" src="./images/maou.png" alt="魔王城">
-
+            <img src="./images/palece.png" class="castle-bg" alt="背景">
             <div class="title-text">
-                <h1 class="game-title">伝説の魔王城</h1>
-                <p class="subtitle">Legend of the Demon Castle</p>
-                <button id="startBtn" class="start-button" type="button" aria-label="ゲームを開始する">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M8 5v14l11-7z" fill="currentColor"/>
-                    </svg>
-                    始める
-                </button>
-                <button id="maouBtn" class="start-button hidden" type="button" aria-label="魔王編を開始する">
-                    魔王編
-                </button>
+                <h1 class="game-title">魔王城と母</h1>
+                <p class="subtitle">〜 狂気か、奇跡か 〜</p>
+                <button id="startBtn" class="start-button">物語を始める</button>
             </div>
         </div>
     </div>
 
-    <!-- ゲーム画面 -->
-    <div id="gameScreen" class="screen">
-        <!-- 背景 -->
-        <div id="gameBackground" class="game-bg">
-            <svg class="scene-bg" viewBox="0 0 800 600" role="img" aria-label="ゲーム背景">
-                <rect id="backgroundColor" width="800" height="600" fill="#2d1b3d"/>
-                <image id="backgroundImage" href="" x="0" y="0" width="800" height="600" preserveAspectRatio="xMidYMid slice" style="display:none;" />
-            </svg>
+    <div id="gameScreen" class="screen hidden">
+        <div class="game-bg">
+            <img id="backgroundImage" class="scene-bg" src="./images/sick.png" alt="シーン背景">
         </div>
         
-        <!-- テキストウィンドウ -->
+        <div id="noiseOverlay" class="noise-overlay hidden"></div>
+        
         <div id="textWindow" class="text-window">
-            <div id="speakerName" class="speaker-name" aria-label="話者名">セラ</div>
-            <div id="gameText" class="game-text" role="log" aria-live="polite" aria-label="ゲームテキスト">
-                息子を救うため、私は魔王城へと向かった...
-            </div>
-            <button id="nextButton" class="next-button" type="button" aria-label="次へ進む">
-                <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
-                </svg>
-            </button>
+            <div id="speakerName" class="speaker-name">名前</div>
+            <div id="gameText" class="game-text">ここにテキストが表示されます。</div>
+            <div class="next-button">▼</div>
         </div>
-        
-        <!-- 選択肢 -->
-        <div id="choicesContainer" class="choices-container hidden" role="dialog" aria-label="選択肢">
-            <div class="choices-wrapper" role="group" aria-label="選択肢一覧">
-                <button class="choice-item" data-choice="0" type="button">選択肢1</button>
-                <button class="choice-item" data-choice="1" type="button">選択肢2</button>
-                <button class="choice-item" data-choice="2" type="button">選択肢3</button>
-            </div>
-        </div>
-        
-        <!-- UI controls -->
-        <div class="game-ui" role="toolbar" aria-label="ゲーム操作">
-            <button id="menuBtn" class="ui-button" type="button" aria-label="メニューを開く">
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" fill="none"/>
-                </svg>
-            </button>
-            <button id="saveBtn" class="ui-button" type="button" aria-label="クイックセーブ">
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" fill="none"/>
-                </svg>
-            </button>
-            <button id="musicBtn" class="ui-button" type="button" aria-label="音楽のオン/オフ"></button>
+
+        <div id="choicesContainer" class="choices-container hidden">
+            <div class="choices-wrapper">
+                </div>
         </div>
     </div>
 
-    <!-- メニュー画面 -->
-    <div id="menuScreen" class="screen menu-overlay hidden">
-        <div class="menu-content" role="dialog" aria-labelledby="menuTitle">
-            <h2 id="menuTitle">メニュー</h2>
-            <nav role="navigation" aria-label="メニュー操作">
-                <button id="resumeBtn" class="menu-button" type="button">ゲームに戻る</button>
-                <button id="saveGameBtn" class="menu-button" type="button">セーブする</button>
-                <button id="loadGameBtn" class="menu-button" type="button">ロードする</button>
-                <button id="titleBtn" class="menu-button" type="button">タイトルに戻る</button>
-            </nav>
-        </div>
-    </div>
-
-    <!-- ローディング画面 -->
-    <div id="loadingScreen" class="screen" style="display: none;">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <p>読み込み中...</p>
-        </div>
-    </div>
-
-    <!-- JavaScript読み込み -->
-    <script src="./script.js"></script>
-    
-    <!-- エラーハンドリング -->
-    <script>
-        window.addEventListener('error', function(e) {
-            console.error('Game Error:', e.error);
-            alert('ゲームでエラーが発生しました。ページを再読み込みしてください。');
-        });
-        
-        // iOS Safari対応
-        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-            document.body.style.webkitUserSelect = 'none';
-            document.body.style.webkitTouchCallout = 'none';
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
