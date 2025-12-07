@@ -1,873 +1,746 @@
-// ゲーム状態管理
-class GameState {
-    constructor() {
-        this.currentScene = 0;
-        this.currentLine = 0;
-        this.playerChoices = [];
-        this.gameFlags = {
-            morality: 0, // 良心値
-            visitedScenes: [],
-            savedMina: false,
-            trustedShadow: false
-        };
-        this.isTyping = false;
-        this.saveData = {};
-    }
+/* =========================================
+   1. グローバル変数・状態管理
+   ========================================= */
+   let currentBgm = null;
 
-    // セーブ機能
-    save() {
-        const saveData = {
-            currentScene: this.currentScene,
-            currentLine: this.currentLine,
-            playerChoices: this.playerChoices,
-            gameFlags: this.gameFlags,
-            timestamp: new Date().toISOString()
-        };
-        localStorage.setItem('demonCastleSave', JSON.stringify(saveData));
-        alert('ゲームをセーブしました！');
-    }
-
-    // ロード機能
-    load() {
-        const saveData = localStorage.getItem('demonCastleSave');
-        if (saveData) {
-            const data = JSON.parse(saveData);
-            this.currentScene = data.currentScene;
-            this.currentLine = data.currentLine;
-            this.playerChoices = data.playerChoices;
-            this.gameFlags = data.gameFlags;
-            game.loadScene(this.currentScene);
-            alert('ゲームをロードしました！');
-        } else {
-            alert('セーブデータが見つかりません。');
-        }
-    }
-}
-
-// ゲームシナリオデータ
-const gameScenarios = {
-    0: { // オープニング
-        background: "cottage",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "息子のアルが病に倒れて、もう三日になる...",
-            "村の薬師は首を振るばかり。",
-            "「魔王城に伝説の薬草がある」そんな噂を聞いた。",
-            "危険を承知で、私は魔王城へ向かうことにした。"
-        ],
-        choices: [
-            { text: "すぐに出発する", next: 1, morality: 1 },
-            { text: "準備を整えてから", next: 2, morality: 0 },
-            { text: "他の方法を探す", next: 3, morality: -1 }
-        ]
-    },
-    1: { // 急いで出発
-        background: "forest",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "夜の森は静寂に包まれている。",
-            "月明かりが木々の間から差し込んで、不気味な影を作っている。",
-            "急がなければ...アルが...",
-            "その時、前方に巨大な城の影が見えてきた。"
-        ],
-        choices: [
-            { text: "正面から堂々と入る", next: 4, morality: 1 },
-            { text: "裏口を探す", next: 5, morality: 0 },
-            { text: "様子を見る", next: 6, morality: -1 }
-        ]
-    },
-    2: { // 準備してから出発
-        background: "cottage",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "武器と食料を準備した。",
-            "アルの枕元で手を握る。熱い...",
-            "「お母さん、必ず帰ってくるよ」",
-            "そう約束して、私は家を後にした。"
-        ],
-        choices: [
-            { text: "森の小道を通る", next: 7, morality: 0 },
-            { text: "街道を行く", next: 8, morality: 1 }
-        ]
-    },
-    3: { // 他の方法を探す
-        background: "cottage",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "村中を駆け回り、薬師や神父に助けを求めた。",
-            "だが誰もアルを救う術を知らなかった。",
-            "時間だけが無情に過ぎていく。",
-            "私は覚悟を決めるしかない。"
-        ],
-        choices: [
-            { text: "魔王城へ向かう", next: 2, morality: 0 },
-            { text: "アルのそばに残る", next: 24, morality: -2 }
-        ]
-    },
-    7: { // 森の小道
-        background: "forest",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "森は静まり返り、遠くでフクロウの声が聞こえる。",
-            "ふと足元で倒れた鹿を見つけた。",
-            "息も絶え絶えのその目が、助けを求めている。",
-            "時間はないけれど、見捨てるわけにはいかない。"
-        ],
-        choices: [
-            { text: "鹿を介抱する", next: 15, morality: 1 },
-            { text: "城へ急ぐ", next: 4, morality: 0 }
-        ]
-    },
-    8: { // 街道
-        background: "forest",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "街道は月光に照らされ、まっすぐ城へと伸びている。",
-            "静かな夜風が、心細さを少しだけ和らげた。",
-            "やがて遠くに魔王城の塔が見えてきた。"
-        ],
-        choices: [
-            { text: "正面から堂々と入る", next: 4, morality: 1 }
-        ]
-    },
-    4: { // 正面突破
-        background: "castle_gate",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "魔王城の門は既に開いていた.",
-            "まるで私を待っていたかのように...",
-            "足音が石畳に響く。",
-            "城内は薄暗く、どこからともなく視線を感じる。"
-        ],
-        choices: [
-            { text: "大広間へ向かう", next: 9, morality: 1 },
-            { text: "地下へ降りる", next: 10, morality: 0 }
-        ]
-    },
-    9: { // 大広間
-        background: "throne_room",
-        character: "shadow",
-        speaker: "影",
-        lines: [
-            "よく来たな、セラ...",
-            "君の息子のことは知っている。",
-            "薬草は確かにここにある。",
-            "だが、それを得るには...代償が必要だ。"
-        ],
-        choices: [
-            { text: "何でも払う", next: 11, morality: -1 },
-            { text: "条件を聞く", next: 12, morality: 0 },
-            { text: "拒否する", next: 13, morality: 1 }
-        ]
-    },
-    11: { // 代償を受け入れる
-        background: "altar",
-        character: "shadow",
-        speaker: "影",
-        lines: [
-            "そうか...では取引成立だ。",
-            "薬草と引き換えに、君の記憶をもらおう。",
-            "息子との思い出を...すべて。",
-            "それでもいいのか？"
-        ],
-        choices: [
-            { text: "受け入れる", next: 14, morality: -2 },
-            { text: "やっぱり断る", next: 13, morality: 1 }
-        ]
-    },
-    13: { // バッドエンド1: 取引を拒否
-        background: "cottage",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "私は影の取引を拒んだ。",
-            "薬草は手に入らなかった。",
-            "家に戻ると、アルの体は冷たくなっていた。",
-            "私の選択が、すべてを終わらせた。"
-        ],
-        isEnding: true,
-        endingType: "bad",
-    },
-    14: { // バッドエンド2
-        background: "cottage",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "私は家に帰った。",
-            "手には確かに薬草が握られている。",
-            "でも...なぜここにいるのか思い出せない。",
-            "ベッドに寝ている少年は...誰だっけ？"
-        ],
-        isEnding: true,
-        endingType: "bad"
-    },
-    15: { // 森の恩恵
-        background: "forest",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "私は鹿の傷に手持ちの薬草を巻いた。",
-            "すると森の奥から柔らかな光が現れた。",
-            "『勇敢な者よ、感謝する』と声が響く。",
-            "光は城への近道を照らし出した。"
-        ],
-        choices: [
-            { text: "光の導きに従う", next: 4, morality: 0 }
-        ]
-    },
-    12: { // 条件を聞く
-        background: "mina",
-        character: "mina",
-        speaker: "ミーナ",
-        lines: [
-            "お母さん...？",
-            "私よ、ミーナよ...",
-            "昔、この城で殺された少女の霊。",
-            "私を成仏させてくれるなら、薬草をあげる。"
-        ],
-        choices: [
-            { text: "成仏させてあげる", next: 16, morality: 2 },
-            { text: "本当にミーナなの？", next: 17, morality: 0 }
-        ]
-    },
-    16: { // トゥルーエンド
-        background: "mina_spirit",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "ミーナの魂は光に包まれて消えていった。",
-            "残された薬草を手に、私は家路についた。",
-            "アルは薬を飲んで、すぐに回復した。",
-            "母と子の絆が、すべてを救ったのだ。"
-        ],
-        isEnding: true,
-        endingType: "true"
-    },
-    17: { // 疑いを持つ
-        background: "altar",
-        character: "shadow",
-        speaker: "影",
-        lines: [
-            "フフフ...鋭いな。",
-            "そう、私は影。この城の主だ。",
-            "ミーナは確かに存在した。だが今は...",
-            "君はどちらを選ぶ？真実か、幻想か。"
-        ],
-        choices: [
-            { text: "真実を求める", next: 18, morality: 1 },
-            { text: "幻想でもいい", next: 19, morality: -1 }
-        ]
-    },
-    18: { // 真実ルート
-        background: "memory_maze",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "記憶の迷宮に足を踏み入れた。",
-            "壁には無数の目が浮かんでいる。",
-            "これは...私の過去の記憶？",
-            "そうだ、私もかつてここで...何かを失った。"
-        ],
-        choices: [
-            { text: "記憶を辿る", next: 20, morality: 1 },
-            { text: "立ち去る", next: 21, morality: 0 }
-        ]
-    },
-    20: { // 記憶の真実
-        background: "memory_maze",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "思い出した...私は昔、娘を失った。",
-            "ミーナ...それは私の娘の名前だった。",
-            "この城で事故で...私が守れなかった。",
-            "アルは二番目の子。同じ過ちは繰り返さない。"
-        ],
-        choices: [
-            { text: "娘を許す", next: 22, morality: 2 },
-            { text: "自分を許す", next: 23, morality: 1 }
-        ]
-    },
-      22: { // 真の救済エンド
-          background: "light",
-          character: "mina",
-          speaker: "本物のミーナ",
-          lines: [
-              "お母さん...ありがとう。",
-              "私はもう大丈夫。弟を守って。",
-              "これは私からの最後の贈り物。",
-              "愛は時を超えて、すべてを癒すのね。"
-          ],
-          isEnding: true,
-            endingType: "perfect"
-        },
-    5: { // 裏口ルート
-        background: "castle_gate",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "城の裏手に回り込んだ。",
-            "古い扉が半開きになっている。",
-            "誰かが通った形跡がある...",
-            "静かに中に入ろう。"
-        ],
-        choices: [
-            { text: "慎重に進む", next: 9, morality: 0 },
-            { text: "急いで進む", next: 4, morality: -1 }
-        ]
-    },
-    6: { // 様子見ルート
-        background: "forest",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "茂みに隠れて城の様子を窺った。",
-            "城からは不気味な光が漏れている。",
-            "でも時間が経つほど、アルが...",
-            "もう躊躇している場合ではない。"
-        ],
-        choices: [
-            { text: "正面から入る", next: 4, morality: 0 },
-            { text: "裏口を探す", next: 5, morality: 1 }
-        ]
-    },
-    10: { // 地下ルート
-        background: "dungeon",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "地下は湿っぽく、鎖の音が響いている。",
-            "牢屋がいくつも並んでいる。",
-            "その奥で、小さな影が動いた。",
-            "「助けて...」か細い声が聞こえる。"
-        ],
-        choices: [
-            { text: "声の主を助ける", next: 12, morality: 2 },
-            { text: "薬草を探しに行く", next: 9, morality: -1 }
-        ]
-    },
-    19: { // 幻想を受け入れる
-        background: "altar",
-        character: "shadow",
-        speaker: "影",
-        lines: [
-            "賢い選択だ...真実など苦痛でしかない。",
-            "この美しい幻想の中で生きればいい。",
-            "薬草をやろう。息子は救える。",
-            "だが君は...永遠にここに留まるのだ。"
-        ],
-        choices: [
-            { text: "受け入れる", next: 14, morality: -2 },
-            { text: "やっぱり断る", next: 18, morality: 1 }
-        ]
-    },
-    21: { // 記憶から立ち去る
-        background: "castle_gate",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "過去を振り返るのはやめよう。",
-            "今は息子を救うことだけを考えなければ。",
-            "城を出て、別の方法を探そう。",
-            "でも...本当にそれでいいのだろうか？"
-        ],
-        choices: [
-            { text: "村に戻る", next: 24, morality: -1 },
-            { text: "もう一度城に入る", next: 9, morality: 0 }
-        ]
-    },
-    23: { // 自分を許すルート
-        background: "memory_maze",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "そうだ...私も人間。完璧ではない。",
-            "ミーナを失ったのは事故だった。",
-            "今度こそ、アルを守り抜こう。",
-            "薬草は...そこにある。"
-        ],
-        choices: [
-            { text: "薬草を取る", next: 16, morality: 1 }
-        ]
-    },
-      24: { // バッドエンド3: 諦め
-        background: "cottage",
-        character: "sera",
-        speaker: "セラ",
-        lines: [
-            "私はアルのそばに残った。",
-            "薬草を求める時間はもう残されていない。",
-            "彼の体温は静かに失われていった。",
-            "私の祈りは届かなかった。"
-        ],
-        isEnding: true,
-        endingType: "bad"
-    }
-  };
-
-const maouScenarios = {
-    0: {
-        background: "throne_room",
-        character: "maou",
-        speaker: "魔王",
-        lines: [
-            "アルが倒れて三日が過ぎた...",
-            "闇の力でも癒せぬ病に、私はただ祈ることしかできない。",
-            "セラよ、どうか薬草を見つけてアルを救ってくれ。"
-        ],
-        isEnding: true,
-        endingType: "maou"
-    }
-};
-
-// ゲームクラス
-class DemonCastleGame {
-    constructor() {
-        this.state = new GameState();
-        this.currentScenario = null;
-        this.scenarios = gameScenarios;
-        this.textSpeed = 50; // ミリ秒
-        this.isAutoMode = false;
-
-        // BGM プレイヤー設定
-        this.bgmPlayer = new Audio();
-        this.bgmPlayer.loop = true;
-        this.currentBGM = '';
-        this.isMuted = false;
-        this.volumeOnIcon = `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z" fill="currentColor"/><path d="M16 7a5 5 0 010 10" stroke="currentColor" stroke-width="2" fill="none"/></svg>`;
-        this.volumeOffIcon = `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z" fill="currentColor"/><path d="M16 7l5 5-5 5M21 7l-5 5 5 5" stroke="currentColor" stroke-width="2" fill="none"/></svg>`;
-
-        this.initializeElements();
-        this.bindEvents();
-        this.showTitleScreen();
-    }
-
-    initializeElements() {
-        // 画面要素
-        this.titleScreen = document.getElementById('titleScreen');
-        this.gameScreen = document.getElementById('gameScreen');
-        this.menuScreen = document.getElementById('menuScreen');
-        
-        // ゲーム要素
-        this.gameBackground = document.getElementById('gameBackground');
-        this.textWindow = document.getElementById('textWindow');
-        this.speakerName = document.getElementById('speakerName');
-        this.gameText = document.getElementById('gameText');
-        this.nextButton = document.getElementById('nextButton');
-        this.choicesContainer = document.getElementById('choicesContainer');
-        
-        // ボタン
-        this.startBtn = document.getElementById('startBtn');
-        this.maouBtn = document.getElementById('maouBtn');
-        this.menuBtn = document.getElementById('menuBtn');
-        this.saveBtn = document.getElementById('saveBtn');
-        this.musicBtn = document.getElementById('musicBtn');
-        this.resumeBtn = document.getElementById('resumeBtn');
-        this.saveGameBtn = document.getElementById('saveGameBtn');
-        this.loadGameBtn = document.getElementById('loadGameBtn');
-        this.titleBtn = document.getElementById('titleBtn');
-
-        if (this.musicBtn) {
-            this.musicBtn.innerHTML = this.volumeOnIcon;
-        }
-    }
-
-    bindEvents() {
-        // タイトル画面
-        this.startBtn.addEventListener('click', () => this.startGame());
-        if (this.maouBtn) {
-            this.maouBtn.addEventListener('click', () => this.startMaouGame());
-        }
-        
-        // ゲーム操作
-        this.nextButton.addEventListener('click', () => this.nextLine());
-        this.menuBtn.addEventListener('click', () => this.showMenu());
-        this.saveBtn.addEventListener('click', () => this.quickSave());
-        if (this.musicBtn) {
-            this.musicBtn.addEventListener('click', () => this.toggleMusic());
-        }
-        
-        // メニュー
-        this.resumeBtn.addEventListener('click', () => this.hideMenu());
-        this.saveGameBtn.addEventListener('click', () => this.saveGame());
-        this.loadGameBtn.addEventListener('click', () => this.loadGame());
-        this.titleBtn.addEventListener('click', () => this.returnToTitle());
-        
-        // キーボード操作
-        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-        
-        // 選択肢クリック
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('choice-item')) {
-                this.selectChoice(parseInt(e.target.dataset.choice));
-            }
-        });
-
-        // タッチ操作対応
-        this.gameText.addEventListener('touchend', () => this.nextLine());
-    }
-
-    handleKeyboard(e) {
-        switch(e.key) {
-            case ' ':
-            case 'Enter':
-                e.preventDefault();
-                if (!this.choicesContainer.classList.contains('hidden')) return;
-                this.nextLine();
-                break;
-            case 'Escape':
-                this.showMenu();
-                break;
-            case 's':
-            case 'S':
-                if (e.ctrlKey) {
-                    e.preventDefault();
-                    this.quickSave();
-                }
-                break;
-        }
-    }
-
-    showTitleScreen() {
-        this.hideAllScreens();
-        this.titleScreen.classList.add('active');
-        this.playBGM('title');
-        if (localStorage.getItem('maouUnlocked')) {
-            this.maouBtn.classList.remove('hidden');
-        } else {
-            this.maouBtn.classList.add('hidden');
-        }
-    }
-
-    startGame() {
-        this.hideAllScreens();
-        this.gameScreen.classList.add('active');
-        this.scenarios = gameScenarios;
-        this.state.currentScene = 0;
-        this.state.currentLine = 0;
-        this.loadScene(0);
-        this.playBGM('game');
-    }
-
-    startMaouGame() {
-        // 魔王編は本編クリア後に解放
-        if (!localStorage.getItem('maouUnlocked')) {
-            alert('魔王編はストーリーを1回クリアすると解放されます。');
-            return;
-        }
-
-        this.hideAllScreens();
-        this.gameScreen.classList.add('active');
-        this.scenarios = maouScenarios;
-        this.state.currentScene = 0;
-        this.state.currentLine = 0;
-        this.loadScene(0);
-        this.playBGM('game');
-    }
-
-    hideAllScreens() {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-    }
-
-    loadScene(sceneId) {
-        this.currentScenario = this.scenarios[sceneId];
-        if (!this.currentScenario) {
-            console.error('Scene not found:', sceneId);
-            return;
-        }
-        
-        this.state.currentScene = sceneId;
-        this.state.currentLine = 0;
-        
-        // 背景を更新
-        this.updateBackground(this.currentScenario.background);
-        
-        // 話者名を更新
-        this.speakerName.textContent = this.currentScenario.speaker;
-        
-        // 選択肢を非表示
-        this.choicesContainer.classList.add('hidden');
-        
-        // 最初のセリフを表示
-        this.displayLine();
-        
-        // 訪問済みシーンに追加
-        if (!this.state.gameFlags.visitedScenes.includes(sceneId)) {
-            this.state.gameFlags.visitedScenes.push(sceneId);
-        }
-    }
-
-    updateBackground(backgroundType) {
-        const svg = this.gameBackground.querySelector('.scene-bg');
-        const rect = svg.querySelector('#backgroundColor');
-        const img = svg.querySelector('#backgroundImage');
-
-        // デフォルトでは画像を非表示
-        img.style.display = 'none';
-        img.removeAttribute('href');
-
-        switch(backgroundType) {
-            case 'cottage':
-                img.setAttribute('href', './images/sick.png');
-                img.style.display = 'block';
-                rect.setAttribute('fill', '#2d1f0f');
-                break;
-            case 'forest':
-                img.setAttribute('href', './images/forest.png');
-                img.style.display = 'block';
-                rect.setAttribute('fill', '#0f2d0f');
-                break;
-            case 'castle_gate':
-                img.setAttribute('href', './images/palece.png');
-                img.style.display = 'block';
-                rect.setAttribute('fill', '#2d1b3d');
-                break;
-            case 'throne_room':
-                img.setAttribute('href', './images/maou.png');
-                img.style.display = 'block';
-                rect.setAttribute('fill', '#1a0033');
-                break;
-            case 'dungeon':
-                img.setAttribute('href', './images/rouya.png');
-                img.style.display = 'block';
-                rect.setAttribute('fill', '#0a0a0a');
-                break;
-            case 'mina':
-                img.setAttribute('href', './images/mina.png');
-                img.style.display = 'block';
-                rect.setAttribute('fill', '#330011');
-                break;
-            case 'mina_spirit':
-                img.setAttribute('href', './images/minatenn.png');
-                img.style.display = 'block';
-                rect.setAttribute('fill', '#ff6b4a');
-                break;
-            case 'altar':
-                rect.setAttribute('fill', '#330011');
-                break;
-            case 'memory_maze':
-                rect.setAttribute('fill', '#1a1a2e');
-                break;
-            case 'sunrise':
-                rect.setAttribute('fill', '#ff6b4a');
-                break;
-            case 'light':
-                rect.setAttribute('fill', '#ffffff');
-                break;
-            default:
-                rect.setAttribute('fill', '#2d1b3d');
-        }
-    }
-
-    displayLine() {
-        if (!this.currentScenario || this.state.isTyping) return;
-        
-        const lines = this.currentScenario.lines;
-        const currentLine = lines[this.state.currentLine];
-        
-        if (!currentLine) {
-            this.showChoices();
-            return;
-        }
-        
-        this.state.isTyping = true;
-        this.gameText.textContent = '';
-        
-        // タイプライター効果
-        this.typeLine(currentLine, 0);
-    }
-
-    typeLine(text, index) {
-        if (index < text.length) {
-            this.gameText.textContent += text[index];
-            setTimeout(() => this.typeLine(text, index + 1), this.textSpeed);
-        } else {
-            this.state.isTyping = false;
-        }
-    }
-
-    nextLine() {
-        if (this.state.isTyping) {
-            // タイピング中なら即座に完了
-            this.state.isTyping = false;
-            this.gameText.textContent = this.currentScenario.lines[this.state.currentLine];
-            return;
-        }
-        
-        this.state.currentLine++;
-        this.displayLine();
-    }
-
-    showChoices() {
-        if (!this.currentScenario.choices) {
-            // エンディングチェック
-            if (this.currentScenario.isEnding) {
-                this.showEnding(this.currentScenario.endingType);
-                return;
-            }
-            return;
-        }
-        
-        const choicesWrapper = this.choicesContainer.querySelector('.choices-wrapper');
-        choicesWrapper.innerHTML = '';
-        
-        this.currentScenario.choices.forEach((choice, index) => {
-            const choiceElement = document.createElement('div');
-            choiceElement.className = 'choice-item choice-appear';
-            choiceElement.textContent = choice.text;
-            choiceElement.dataset.choice = index;
-            choiceElement.style.animationDelay = `${index * 0.1}s`;
-            choicesWrapper.appendChild(choiceElement);
-        });
-        
-        this.choicesContainer.classList.remove('hidden');
-        this.playSE('choice_appear');
-    }
-
-    selectChoice(choiceIndex) {
-        const choice = this.currentScenario.choices[choiceIndex];
-        if (!choice) return;
-        
-        // 選択を記録
-        this.state.playerChoices.push({
-            scene: this.state.currentScene,
-            choice: choiceIndex,
-            text: choice.text
-        });
-        
-        // 道徳値を更新
-        this.state.gameFlags.morality += choice.morality || 0;
-        
-        // 効果音
-        this.playSE('choice_select');
-        
-        // 次のシーンへ
-        setTimeout(() => {
-            this.loadScene(choice.next);
-        }, 500);
-    }
-
-    showEnding(endingType) {
-        let endingMessage = '';
-        
-        switch(endingType) {
-            case 'bad':
-                endingMessage = 'バッドエンド：記憶を失った母';
-                break;
-            case 'true':
-                endingMessage = 'トゥルーエンド：愛の勝利';
-                break;
-            case 'perfect':
-                endingMessage = 'パーフェクトエンド：真の救済';
-                break;
-            case 'maou':
-                endingMessage = '魔王編エンド：父の祈り';
-                break;
-        }
-
-        setTimeout(() => {
-            if (endingType !== 'maou') {
-                localStorage.setItem('maouUnlocked', 'true');
-            }
-            alert(`${endingMessage}\n\nゲームクリア！\n道徳値: ${this.state.gameFlags.morality}`);
-            this.returnToTitle();
-        }, 2000);
-    }
-
-    showMenu() {
-        this.menuScreen.classList.remove('hidden');
-        this.menuScreen.classList.add('active');
-    }
-
-    hideMenu() {
-        this.menuScreen.classList.remove('active');
-        this.menuScreen.classList.add('hidden');
-    }
-
-    quickSave() {
-        this.state.save();
-    }
-
-    saveGame() {
-        this.state.save();
-        this.hideMenu();
-    }
-
-    loadGame() {
-        this.state.load();
-        this.hideMenu();
-    }
-
-    returnToTitle() {
-        this.hideMenu();
-        this.showTitleScreen();
-        this.state = new GameState(); // リセット
-    }
-
-    // サウンド関連
-    playBGM(bgmType) {
-        const bgmMap = {
-            title: './audio/Dust_city.mp3',
-            game: './audio/Songs_of_the_Soulless.mp3'
-        };
-
-        const src = bgmMap[bgmType];
-        if (!src) return;
-
-        if (this.currentBGM === src) return;
-
-        try {
-            this.bgmPlayer.pause();
-            this.bgmPlayer.src = src;
-            this.bgmPlayer.muted = this.isMuted;
-            this.bgmPlayer.play().catch(err => console.error('BGM play failed:', err));
-            this.currentBGM = src;
-        } catch (e) {
-            console.error('BGM error:', e);
-        }
-    }
-
-    toggleMusic() {
-        this.isMuted = !this.isMuted;
-        this.bgmPlayer.muted = this.isMuted;
-        if (this.musicBtn) {
-            this.musicBtn.innerHTML = this.isMuted ? this.volumeOffIcon : this.volumeOnIcon;
-        }
-    }
-
-    playSE(seType) {
-        console.log(`Playing SE: ${seType}`);
-        // 実際の実装では効果音を再生
-    }
-}
-
-// ゲーム初期化
-let game;
-
-function initGame() {
-    game = new DemonCastleGame();
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initGame);
-} else {
-    initGame();
-}
-
-// サービスワーカー登録（PWA対応の準備）
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log('SW registered'))
-            .catch(() => console.log('SW registration failed'));
-    });
-}
+   let gameState = {
+       scene: 'prologue_1', // 開始シーンID
+       textIndex: 0,        // テキスト位置
+       flags: {             // フラグ管理
+           hasPhoto: false, // 息子の写真
+           hasKnife: false, // ナイフ
+           metMina: false,  // ミナと会ったか
+           minaSaved: false,// ミナを救ったか
+           minaTrust: 0,    // ミナの信頼度
+           isInjured: false,// 怪我をしているか
+           greed: false,    // 強欲（宝石）
+           madness: 0       // 狂気度
+       }
+   };
+   
+   // HTML要素の取得
+   const getEl = (id) => document.getElementById(id);
+   
+   /* =========================================
+      2. シナリオデータ (セラ削除・孤独な戦い版)
+      ========================================= */
+   const scenarios = {
+       // ---------------------------------------------------------
+       // 【序章：出発】
+       // ---------------------------------------------------------
+       'prologue_1': {
+           bgm: './audio/Dust_city.mp3',
+           image: './images/sick.png',
+           texts: [
+               { name: "主人公", content: "（窓の外では、冷たい雨が降り続いている……）" },
+               { name: "主人公", content: "（原因不明の熱病が息子を襲ってから、もう三日が過ぎた。医者も匙を投げた状態だ。）" },
+               { name: "息子", content: "「……うぅ……ママ……苦しいよ……」" },
+               { name: "主人公", content: "「大丈夫よ。ここにいるわ。……代わってあげられなくて、ごめんね」" },
+               { name: "主人公", content: "息子の体は火のように熱い。伝説の『万魔の雫』を手に入れなければ、この子は助からない。" }
+           ],
+           nextScene: 'prologue_selection'
+       },
+       'prologue_selection': { 
+           bgm: './audio/Dust_city.mp3',
+           image: './images/sick.png',
+           texts: [
+               { name: "主人公", content: "旅支度を整える。鞄にはもう、あと一つしか物が入らない。" },
+               { name: "主人公", content: "何を持っていくべきだろうか……？" }
+           ],
+           choices: [
+               { text: "息子の写真", nextScene: 'prologue_end', setFlag: 'hasPhoto' },
+               { text: "護身用ナイフ", nextScene: 'prologue_end', setFlag: 'hasKnife' }
+           ]
+       },
+       'prologue_end': {
+           bgm: './audio/Dust_city.mp3',
+           image: './images/sick.png',
+           texts: [
+               { name: "主人公", content: "「……行ってくるね。必ず、お薬を持ち帰るから」" },
+               { name: "息子", content: "「……ママ……いかないで……」" },
+               { name: "主人公", content: "後ろ髪を引かれる思いを断ち切り、私は扉を閉めた。" }
+           ],
+           nextScene: 'forest_entry'
+       },
+   
+       // ---------------------------------------------------------
+       // 【第1章：帰らずの森】
+       // ---------------------------------------------------------
+       'forest_entry': {
+           bgm: './audio/Dust_city.mp3',
+           image: './images/forest.png',
+           texts: [
+               { name: "主人公", content: "ここが『帰らずの森』……肌を刺すような瘴気（しょうき）が漂っている。" },
+               { name: "主人公", content: "目の前には二つの道があった。" }
+           ],
+           nextScene: 'branch_path'
+       },
+       'branch_path': {
+           bgm: './audio/Dust_city.mp3',
+           image: './images/forest.png',
+           texts: [
+               { name: "主人公", content: "どちらへ進もうか？" }
+           ],
+           choices: [
+               { text: "獣道のような暗い近道", nextScene: 'forest_fruit' },
+               { text: "安全だが遠回りな道", nextScene: 'forest_fruit', setFlag: 'lateArrival' }
+           ]
+       },
+       'forest_fruit': { 
+           bgm: './audio/Dust_city.mp3',
+           image: './images/forest.png',
+           texts: [
+               { name: "主人公", content: "何時間歩いただろう。空腹で目が回りそうだ。" },
+               { name: "主人公", content: "目の前に、毒々しい色だが甘そうな香りの果実がある。" },
+               { name: "主人公", content: "（食べたら楽になれるかもしれない……でも、嫌な予感がする）" }
+           ],
+           choices: [
+               { text: "構わず食べる", nextScene: 'forest_plant', setFlag: 'ateFruit' },
+               { text: "我慢する", nextScene: 'forest_plant', setFlag: 'starving' }
+           ]
+       },
+       'forest_plant': { 
+           bgm: './audio/Dust_city.mp3',
+           image: './images/plant.png', // 変更: 植物の画像を使用
+           texts: [
+               { name: "主人公", content: "その時、巨大な植物の蔦（ツタ）が襲いかかってきた！" },
+               { name: "主人公", content: "「嘘……生きてるの！？」" }
+           ],
+           choices: [
+               { text: "武器で切り払う！", nextScene: 'plant_fight_check' }, 
+               { text: "必死に逃げる！", nextScene: 'plant_escape' }
+           ]
+       },
+       // --- 判定用シーン ---
+       'plant_fight_check': {
+           checkFlag: 'hasKnife',
+           trueScene: 'plant_win',
+           falseScene: 'plant_fail'
+       },
+       'plant_win': {
+           bgm: './audio/Dust_city.mp3',
+           image: './images/forest.png',
+           texts: [
+               { name: "主人公", content: "私は持ってきたナイフを一閃させた！" },
+               { name: "主人公", content: "蔦は悲鳴のような音を上げて千切れ飛ぶ。" },
+               { name: "主人公", content: "「はぁ、はぁ……持ってきてよかった……」" }
+           ],
+           nextScene: 'castle_view'
+       },
+       'plant_fail': {
+           bgm: './audio/Dust_city.mp3',
+           image: './images/forest.png',
+           texts: [
+               { name: "主人公", content: "武器がない！ 私は素手で蔦を引き剥がそうとした。" },
+               { name: "主人公", content: "「ぐっ……痛いッ！」", textClass: "shaking-text" },
+               { name: "主人公", content: "蔦が皮膚に食い込む。私は悲鳴を上げながら、無理やり体をひねって脱出した。" },
+               { name: "主人公", content: "なんとか逃げ切ったが、腕に深い傷を負ってしまった……。" }
+           ],
+           nextScene: 'castle_view',
+           setFlag: 'isInjured'
+       },
+       'plant_escape': {
+           bgm: './audio/Dust_city.mp3',
+           image: './images/forest.png',
+           texts: [
+               { name: "主人公", content: "私は泥だらけになりながら、無我夢中で走り抜けた。" },
+               { name: "主人公", content: "体力を激しく消耗してしまったが、命だけは助かったようだ。" }
+           ],
+           nextScene: 'castle_view',
+           setFlag: 'starving'
+       },
+   
+       // ---------------------------------------------------------
+       // 【第2章：魔王城・侵入】
+       // ---------------------------------------------------------
+       'castle_view': {
+           bgm: './audio/casle.mp3',
+           image: './images/palece.png',
+           texts: [
+               { name: "主人公", content: "森を抜けると、雷鳴と共に巨大な魔王城が姿を現した。" },
+               { name: "主人公", content: "あそこに、あの子を救う薬がある……！" }
+           ],
+           nextScene: 'castle_gate'
+       },
+       'castle_gate': {
+           bgm: './audio/casle.mp3',
+           image: './images/palece.png',
+           texts: [
+               { name: "主人公", content: "巨大な門。鍵はかかっていないが、不自然な静けさだ。" }
+           ],
+           choices: [
+               { text: "構わず扉を押し開ける", nextScene: 'gate_trap' },
+               { text: "周囲を慎重に調べる", nextScene: 'gate_safe' }
+           ]
+       },
+       'gate_trap': {
+           bgm: './audio/casle.mp3',
+           image: './images/palece.png',
+           texts: [
+               { name: "効果音", content: "プシューッ！" },
+               { name: "主人公", content: "「きゃあっ！？」扉の隙間から毒霧が噴き出した。" },
+               { name: "主人公", content: "「げほっ、ごほっ！ ……毒……！？」" },
+               { name: "主人公", content: "口元を袖で覆い、這いつくばって煙の下をくぐり抜ける。喉が焼けるように痛い。" }
+           ],
+           nextScene: 'corridor_encounter',
+           setFlag: 'isInjured'
+       },
+       'gate_safe': {
+           bgm: './audio/casle.mp3',
+           image: './images/palece.png',
+           texts: [
+               { name: "主人公", content: "よく見ると、扉の足元に細いワイヤーが張ってあった。" },
+               { name: "主人公", content: "これを外して……よし。安全に中へ入れるわ。" }
+           ],
+           nextScene: 'corridor_encounter'
+       },
+   
+       'corridor_encounter': { 
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/gaikotu.png', // 変更: 骸骨の画像を使用
+           texts: [
+               { name: "主人公", content: "城内は冷え切っている。……前方から、カツン、カツンと硬質な足音が聞こえてきた。" },
+               { name: "主人公", content: "（骸骨の兵士……！ 見つかったら殺される）" }
+           ],
+           choices: [
+               { text: "物陰に隠れてやり過ごす", nextScene: 'hide_success' },
+               { text: "背後から不意打ちする", nextScene: 'attack_guard' }
+           ]
+       },
+       'hide_success': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/rouya.png',
+           texts: [
+               { name: "主人公", content: "息を殺して柱の陰に隠れる。兵士は気づかずに通り過ぎていった。" }
+           ],
+           nextScene: 'treasure_room'
+       },
+       'attack_guard': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/gaikotu.png', // 変更: 骸骨の画像を使用
+           texts: [
+               { name: "主人公", content: "私は近くにあった燭台を掴み、骸骨の頭蓋を打ち砕いた！" },
+               { name: "効果音", content: "ガシャァン！！" },
+               { name: "主人公", content: "「はぁ、はぁ……ごめんね。でも、通らなきゃいけないの」" },
+               { name: "主人公", content: "（あの子のためなら、私は鬼にだってなる）" }
+           ],
+           nextScene: 'treasure_room',
+           setFlag: 'madness' // 狂気度アップ
+       },
+   
+       'treasure_room': { 
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/rouya.png',
+           texts: [
+               { name: "主人公", content: "通りがかった部屋には、山のような金銀財宝が積まれていた。" },
+               { name: "主人公", content: "（これがあれば、街一番の医者を雇える……いや、一生遊んで暮らせるかも……）" }
+           ],
+           choices: [
+               { text: "宝石をひとつだけ盗む", nextScene: 'steal_gem', setFlag: 'greed' },
+               { text: "目もくれずに先へ進む", nextScene: 'ignore_gem' }
+           ]
+       },
+       'steal_gem': { 
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/piero.png', 
+           texts: [
+               { name: "主人公", content: "魔除けになりそうな赤い宝石をポケットに入れた。その時——" },
+               { name: "ピエロ", content: "「おやおや、また一つ『愛』を『執着』と履き違えましたねぇ？」" },
+               { name: "主人公", content: "「！？ 誰！？」" },
+               { name: "ピエロ", content: "「ククク……その必死な顔、最高の余興ですよ、お母さん」", textClass: "shaking-text" },
+               { name: "主人公", content: "不気味な道化師は、煙のように消え失せた。……ただの幻覚だったのだろうか。" }
+           ],
+           nextScene: 'dungeon_entry'
+       },
+       'ignore_gem': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/rouya.png',
+           texts: [
+               { name: "主人公", content: "今は金銭など無価値だ。必要なのは息子の命を繋ぐ薬だけ。" },
+               { name: "主人公", content: "私は迷わず部屋を出た。" }
+           ],
+           nextScene: 'dungeon_entry'
+       },
+   
+       // ---------------------------------------------------------
+       // 【第3章：地下牢のミナ】
+       // ---------------------------------------------------------
+       'dungeon_entry': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/rouya.png',
+           texts: [
+               { name: "主人公", content: "地下から、誰かのすすり泣く声が聞こえる……。" },
+               { name: "主人公", content: "導かれるように地下牢へ降りると、青白く光る少女の霊がいた。" }
+           ],
+           nextScene: 'meet_mina'
+       },
+       'meet_mina': { 
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/mina.png',
+           texts: [
+               { name: "ミナ", content: "「ひっ……こ、来ないで……痛いのは嫌……」" },
+               { name: "主人公", content: "少女は怯えている。どう接しようか？" }
+           ],
+           choices: [
+               { text: "優しく声をかける", nextScene: 'mina_friend', setFlag: 'metMina' },
+               { text: "警戒して距離を取る", nextScene: 'mina_wary' }
+           ]
+       },
+       'mina_friend': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/mina.png',
+           texts: [
+               { name: "主人公", content: "「怖くないわ。私はあなたを傷つけたりしない」" },
+               { name: "ミナ", content: "「……本当？ おばさん……ううん、お姉さん、優しい目をしているのね」" },
+               { name: "ミナ", content: "「私はミナ。この城の抜け道を教えてあげる」" }
+           ],
+           nextScene: 'mina_shortcut_offer',
+           setFlag: 'minaTrust'
+       },
+       'mina_wary': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/mina.png',
+           texts: [
+               { name: "主人公", content: "（罠かもしれない）私はナイフを隠し持ちながら様子を伺った。" },
+               { name: "ミナ", content: "「……あなたも、魔王様の手下なのね。……あっちへ行って」" },
+               { name: "主人公", content: "少女は姿を消してしまった。" }
+           ],
+           nextScene: 'stairs_climb'
+       },
+       'mina_shortcut_offer': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/mina.png',
+           texts: [
+               { name: "ミナ", content: "「こっちの『死者の谷』を通れば、玉座の裏まで行けるわ」" },
+               { name: "主人公", content: "（……あんな危険な場所を？ でも、時間を短縮できるかもしれない）" }
+           ],
+           choices: [
+               { text: "ミナを信じて近道を行く", nextScene: 'shortcut_bridge' },
+               { text: "正規ルート（階段）を行く", nextScene: 'stairs_climb' }
+           ]
+       },
+       'shortcut_bridge': { 
+           bgm: './audio/casle.mp3',
+           image: './images/palece.png',
+           texts: [
+               { name: "主人公", content: "ミナの案内で古びた吊り橋を渡る。" },
+               { name: "効果音", content: "バキッ！" },
+               { name: "主人公", content: "「きゃあっ！」足場が崩れた！ ミナが手を伸ばしてくれている！" }
+           ],
+           choices: [
+               { text: "ミナの手を掴む", nextScene: 'shortcut_success' },
+               { text: "自力で向こう岸へ跳ぶ", nextScene: 'shortcut_fail' }
+           ]
+       },
+       'shortcut_success': {
+           bgm: './audio/casle.mp3',
+           image: './images/mina.png',
+           texts: [
+               { name: "主人公", content: "私はミナの手を掴んだ！ 霊体のはずなのに、確かな温もりがあった。" },
+               { name: "ミナ", content: "「よかった……！ お母さん、怪我はない！？」" },
+               { name: "主人公", content: "足首を捻ってしまったが、ミナとの絆は深まった気がする。" }
+           ],
+           nextScene: 'throne_room',
+           setFlag: 'minaSaved'
+       },
+       'shortcut_fail': {
+           bgm: './audio/casle.mp3',
+           image: './images/palece.png',
+           texts: [
+               { name: "主人公", content: "私は反射的に対岸へ飛び移った。" },
+               { name: "ミナ", content: "「あっ……」" },
+               { name: "主人公", content: "ミナは崩れた橋と共に谷底へ落ちていく……いや、霧散して消えてしまった。" },
+               { name: "主人公", content: "（ごめん……でも、私は生きなきゃいけないの）" }
+           ],
+           nextScene: 'throne_room'
+       },
+       'stairs_climb': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/rouya.png',
+           texts: [
+               { name: "主人公", content: "長い長い階段を登り続ける。足が棒のようだ。" },
+               { name: "主人公", content: "（急がないと……あの子の命が……）" }
+           ],
+           nextScene: 'throne_room'
+       },
+   
+       // ---------------------------------------------------------
+       // 【第4章：試練】
+       // ---------------------------------------------------------
+       'throne_room': {
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "主人公", content: "扉を開け放つと、玉座には闇を纏った魔王が座していた。" },
+               { name: "魔王", content: "「……人間か。死に損ないの小娘の匂いがするな」" },
+               { name: "主人公", content: "「薬をちょうだい！ 対価なら払うわ！」" }
+           ],
+           nextScene: 'demon_dialogue_1'
+       },
+       'demon_dialogue_1': { 
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "魔王", content: "「なぜそこまでして息子を生かそうとする？ 人はいずれ死ぬ運命だ。早いか遅いかの違いでしかない」" }
+           ],
+           choices: [
+               { text: "「親が子を守るのは本能よ」", nextScene: 'dialogue_logic' },
+               { text: "「理屈じゃない！ 愛しているからよ」", nextScene: 'dialogue_emotion' }
+           ]
+    
+       },
+       'dialogue_logic': {
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "主人公", content: "「親が子を守るのは生物としての本能よ。理屈なんてないわ」" },
+               { name: "魔王", content: "「ほう、本能か。獣と同じだな」" }
+           ],
+           nextScene: 'demon_dialogue_2'
+       },
+       'dialogue_emotion': {
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "主人公", content: "「理屈なんてどうでもいい！ 愛しているからよ！ あなたに愛は分からないの！？」" },
+               { name: "魔王", content: "「……愛、か。もっとも脆く、裏切りやすい感情だ」" }
+           ],
+           nextScene: 'demon_dialogue_2'
+       },
+       'demon_dialogue_2': { 
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "魔王", content: "「仮に薬を持ち帰り、息子が生き延びたとしよう。だが成長した息子が、老いたお前を邪魔者扱いし、捨てたらどうする？」" }
+           ],
+           choices: [
+               { text: "それでも構わない", nextScene: 'demon_trial_start', setFlag: 'pureLove' },
+               { text: "そんなことはさせない", nextScene: 'demon_trial_start', setFlag: 'yandere' }
+           ]
+       },
+       'demon_trial_start': { 
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "魔王", content: "「口では何とでも言える。……試してやろう。貴様の精神を破壊する『絶望の幻影』を！」" },
+               { name: "主人公", content: "視界が歪む。……そこには、元気に成長した息子の姿があった。", effect: "noise-start" },
+               { name: "幻影の息子", content: "『うざいんだよババア！ さっさと死ねよ！』", textClass: "shaking-text" },
+               { name: "主人公", content: "「！！ ……あ、ああ……」" }
+           ],
+           checkFlag: 'hasPhoto', 
+           trueScene: 'trial_photo_bonus',
+           falseScene: 'trial_no_item'
+       },
+       'trial_photo_bonus': {
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "主人公", content: "心が折れそうになったその時、ポケットの写真が熱を持った。" },
+               { name: "主人公", content: "（違う……これは幻よ。あの子は、こんな事言わない！）" },
+               { name: "主人公", content: "私は写真を握りしめ、幻影を睨み返した！" }
+           ],
+           nextScene: 'final_choice'
+       },
+       'trial_no_item': {
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "主人公", content: "言葉の刃が胸に突き刺さる。" },
+               { name: "主人公", content: "（私が死ねば、あの子は自由になれるの……？）" },
+               { name: "主人公", content: "「……いいえ、違う！ これは魔王の見せる幻よ！」" },
+               { name: "主人公", content: "ギリギリのところで自我を保つ。だが、精神はボロボロだ。" }
+           ],
+           nextScene: 'final_choice'
+       },
+   
+       // ---------------------------------------------------------
+       // 【最終章：決断】
+       // ---------------------------------------------------------
+       'final_choice': { 
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "魔王", content: "「ほう、耐え抜くか。……よかろう、薬はやろう」", effect: "noise-stop" },
+               { name: "魔王", content: "「ただし代償が必要だ。貴様の『息子に関する記憶』を全て置いていけ」" },
+               { name: "主人公", content: "「えっ……？」" },
+               { name: "魔王", content: "「息子は助かる。だがお前は、自分が誰を助けたのか、なぜここにいるのかも忘れるのだ」" }
+           ],
+           choices: [
+               { text: "記憶を差し出す", nextScene: 'end_memory_loss' },
+               { text: "ふざけるなと拒絶する", nextScene: 'battle_start' }
+           ]
+       },
+   
+       // --- 【エンディング演出追加・修正版】 ---
+       'end_memory_loss': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/minatenn.png',
+           texts: [
+               { name: "主人公", content: "「……わかったわ。あの子が助かるなら、私の思い出なんて安いものよ」" },
+               { name: "魔王", content: "「契約成立だ」" },
+               { name: "システム", content: "……視界が白く染まっていく。", effect: "white-out" }, 
+               { name: "？？？", content: "「ママ？ ママ！ 起きて！」" },
+               { name: "私", content: "「……あなたは、だぁれ？ どうして泣いているの？」" },
+               { name: "システム", content: "〜 BAD END? : 母の愛はどこへ 〜", textClass: "text-blood" } 
+           ],
+           nextScene: null
+       },
+       'battle_start': {
+           bgm: './audio/casle.mp3',
+           image: './images/maou.png',
+           texts: [
+               { name: "主人公", content: "「記憶を奪ったら、あの子を愛し続けられない！ そんな条件、呑めるもんですか！」" },
+               { name: "魔王", content: "「ならば死ね」" },
+               { name: "主人公", content: "魔王の魔力が膨れ上がる。勝てるはずがない。でも……！" }
+           ],
+           choices: [
+               { text: "ミナの助けを呼ぶ", nextScene: 'battle_mina_check' },
+               { text: "自分自身の魂を燃やす", nextScene: 'end_sacrifice' }
+           ]
+       },
+       'battle_mina_check': {
+           checkFlag: 'minaSaved', 
+           trueScene: 'end_true',
+           falseScene: 'end_bad_dead'
+       },
+       'end_true': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/minatenn.png',
+           texts: [
+               { name: "主人公", content: "「ミナ！ お願い、力を貸して！」" },
+               { name: "ミナ", content: "「待ってました！ お母さんの勇気、私が守る！」" },
+               { name: "システム", content: "まばゆい光が魔王の闇を切り裂く。ミナが身を挺して魔王の動きを封じた！", effect: "white-out" }, 
+               { name: "魔王", content: "「ぬぅ……死人の分際で……！」" },
+               { name: "主人公", content: "その隙に、私は祭壇の薬を掴み取り、出口へと走り出した！" },
+               { name: "息子", content: "「……ママ、おかえり」" },
+               { name: "主人公", content: "「ただいま。……愛してるわ」" },
+               { name: "システム", content: "〜 TRUE END : 奇跡の生還 〜", textClass: "text-gold" } 
+           ],
+           nextScene: null
+       },
+       'end_sacrifice': {
+           bgm: './audio/Songs_of_the_Soulless.mp3',
+           image: './images/sick.png',
+           texts: [
+               { name: "主人公", content: "私は自分の生命力を魔力に変えて特攻した。" },
+               { name: "主人公", content: "相打ち覚悟の一撃が、魔王の仮面を砕く。" },
+               { name: "魔王", content: "「……見事だ。褒美に薬をやろう。ただし、お前の命は尽きる」" },
+               { name: "主人公", content: "薄れゆく意識の中で、薬を握りしめ、出口へと這いずり始めた。", effect: "black-out" }, 
+               { name: "主人公", content: "（あの子に……渡すまでは……死ねない……！）" },
+               { name: "システム", content: "〜 NORMAL END : 母の執念 〜" }
+           ],
+           nextScene: null
+       },
+       'end_bad_dead': {
+           bgm: null,
+           image: './images/maou.png',
+           texts: [
+               { name: "主人公", content: "「ミナ……！」" },
+               { name: "システム", content: "しかし、誰も答えない。あの時、見捨ててしまったからだ。" },
+               { name: "魔王", content: "「誰も助けには来ぬ。孤独に死ね」", effect: "black-out" }, 
+               { name: "システム", content: "〜 BAD END : 孤独な最期 〜", textClass: "scream-text" }
+           ],
+           nextScene: null
+       }
+   };
+   
+   /* =========================================
+      3. 関数定義 (システム更新)
+      ========================================= */
+   
+   function playBgm(file) {
+       if (!file) return;
+       if (currentBgm && currentBgm.src.indexOf(file.replace('./', '')) !== -1) return; 
+   
+       if (currentBgm) {
+           currentBgm.pause();
+           currentBgm.currentTime = 0;
+       }
+   
+       currentBgm = new Audio(file);
+       currentBgm.loop = true;
+       currentBgm.volume = 0.4;
+       currentBgm.play().catch(e => console.log("Waiting for interaction", e));
+   }
+   
+   function playSe(file) {
+       if (!file) return;
+       try {
+           const audio = new Audio(file);
+           audio.volume = 0.6;
+           audio.play().catch(e => console.log("SE Play failed (file missing?):", file));
+       } catch (e) {
+           console.warn("SE Play error:", e);
+       }
+   }
+   
+   function setFlag(flagName) {
+       if (flagName) {
+           gameState.flags[flagName] = true;
+           console.log(`Flag set: ${flagName}`);
+       }
+   }
+   
+   function checkCondition(sceneData) {
+       if (sceneData.checkFlag) {
+           const isTrue = gameState.flags[sceneData.checkFlag];
+           const targetScene = isTrue ? sceneData.trueScene : sceneData.falseScene;
+           loadScene(targetScene);
+           return true;
+       }
+       return false;
+   }
+   
+   function loadScene(sceneId) {
+       console.log("Loading scene:", sceneId);
+       
+       let sceneData = scenarios[sceneId];
+       if (!sceneData) {
+           console.error("Scene not found:", sceneId);
+           return;
+       }
+   
+       if (checkCondition(sceneData)) return;
+   
+       gameState.scene = sceneId;
+       gameState.textIndex = 0;
+   
+       const bgImage = getEl('backgroundImage');
+       if (bgImage) {
+           bgImage.style.display = '';
+           bgImage.setAttribute('src', sceneData.image); 
+       }
+   
+       playBgm(sceneData.bgm);
+       
+       const choicesContainer = getEl('choicesContainer');
+       if(choicesContainer) choicesContainer.classList.add('hidden');
+       
+       const textWindow = getEl('textWindow');
+       if(textWindow) textWindow.classList.remove('faded');
+       
+       // エンディング演出リセット
+       const endingOverlay = getEl('endingOverlay');
+       if(endingOverlay) {
+           endingOverlay.className = 'hidden'; 
+       }
+       
+       renderText();
+   }
+   
+   function renderText() {
+       const sceneData = scenarios[gameState.scene];
+       const currentText = sceneData.texts[gameState.textIndex];
+       
+       const noiseOverlay = getEl('noiseOverlay');
+       const endingOverlay = getEl('endingOverlay');
+       const textBox = getEl('gameText');
+       const nameBox = getEl('speakerName');
+   
+       if (noiseOverlay) noiseOverlay.classList.add('hidden');
+       if (textBox) textBox.className = 'game-text';
+   
+       if (currentText.se) playSe(currentText.se);
+   
+       // 演出適用
+       if (currentText.effect === 'noise-start' && noiseOverlay) noiseOverlay.classList.remove('hidden');
+       
+       if (endingOverlay) {
+           if (currentText.effect === 'white-out') {
+               endingOverlay.classList.remove('hidden');
+               endingOverlay.classList.add('effect-white');
+           } else if (currentText.effect === 'black-out') {
+               endingOverlay.classList.remove('hidden');
+               endingOverlay.classList.add('effect-black');
+           }
+       }
+   
+       if (currentText.textClass && textBox) textBox.classList.add(currentText.textClass);
+   
+       if (nameBox) nameBox.innerText = currentText.name;
+       if (textBox) textBox.innerText = currentText.content;
+   }
+   
+   function showChoices(choices) {
+       const container = getEl('choicesContainer');
+       const wrapper = container.querySelector('.choices-wrapper');
+       if (!wrapper) return;
+       
+       wrapper.innerHTML = '';
+   
+       choices.forEach(choice => {
+           const btn = document.createElement('button');
+           btn.className = 'choice-item';
+           btn.innerText = choice.text;
+           
+           btn.onclick = function() {
+               if (choice.setFlag) setFlag(choice.setFlag);
+               container.classList.add('hidden');
+               loadScene(choice.nextScene);
+           };
+           wrapper.appendChild(btn);
+       });
+   
+       container.classList.remove('hidden');
+   }
+   
+   function next() {
+       const choicesContainer = getEl('choicesContainer');
+       if (choicesContainer && !choicesContainer.classList.contains('hidden')) return;
+   
+       const sceneData = scenarios[gameState.scene];
+       if (!sceneData) return;
+   
+       if (gameState.textIndex < sceneData.texts.length - 1) {
+           gameState.textIndex++;
+           renderText();
+       } 
+       else {
+           if (sceneData.choices) {
+               showChoices(sceneData.choices);
+           } 
+           else if (sceneData.nextScene) {
+               loadScene(sceneData.nextScene);
+           } 
+           else {
+               if(confirm("物語は結末を迎えました。タイトルへ戻りますか？")) {
+                   location.reload();
+               }
+           }
+       }
+   }
+   
+   /* =========================================
+      4. 初期化
+      ========================================= */
+   function initGame() {
+       console.log("Game Initializing...");
+       const gameScreen = getEl('gameScreen');
+       const startBtn = getEl('startBtn');
+       const titleScreen = getEl('titleScreen');
+   
+       if (gameScreen) gameScreen.addEventListener('click', next);
+   
+       if (startBtn) {
+           startBtn.addEventListener('click', function(e) {
+               e.preventDefault();
+               if(titleScreen) {
+                   titleScreen.classList.add('hidden');
+                   titleScreen.classList.remove('active');
+               }
+               if(gameScreen) {
+                   gameScreen.classList.remove('hidden');
+                   gameScreen.classList.add('active');
+               }
+               
+               // ゲーム開始
+               loadScene('prologue_1');
+           });
+       }
+   }
+   
+   if (document.readyState === 'loading') {
+       document.addEventListener('DOMContentLoaded', initGame);
+   } else {
+       initGame();
+   }
