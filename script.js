@@ -3,7 +3,18 @@
    ========================================= */
    let currentBgm = null;
 
-   let gameState = {
+   // 【最新技術 #1】Proxy オブジェクト - ゲーム状態管理
+   const stateHandler = {
+       set(target, property, value) {
+           if (property === 'flags') {
+               console.log(`[State] Flags updated:`, value);
+           }
+           target[property] = value;
+           return true;
+       }
+   };
+
+   let gameState = new Proxy({
        scene: 'prologue_1', // 開始シーンID
        textIndex: 0,        // テキスト位置
        flags: {             // フラグ管理
@@ -16,7 +27,11 @@
            greed: false,    // 強欲（宝石）
            madness: 0       // 狂気度
        }
-   };
+   }, stateHandler);
+
+   // 【最新技術 #2】Map/Set - 効率的なデータ構造
+   const itemInventory = new Map();
+   const completedScenes = new Set();
    
    // HTML要素の取得
    const getEl = (id) => document.getElementById(id);
@@ -684,24 +699,34 @@
        container.classList.remove('hidden');
    }
    
+   // 【最新技術 #3】Async/Await - シーン遷移制御
+   async function loadSceneAsync(sceneId) {
+       try {
+           await new Promise(resolve => setTimeout(resolve, 300)); // フェード時間
+           loadScene(sceneId);
+       } catch (e) {
+           console.error('Scene load failed:', e);
+       }
+   }
+
    function next() {
        const choicesContainer = getEl('choicesContainer');
        if (choicesContainer && !choicesContainer.classList.contains('hidden')) return;
-   
+
        const sceneData = scenarios[gameState.scene];
        if (!sceneData) return;
-   
+
        if (gameState.textIndex < sceneData.texts.length - 1) {
            gameState.textIndex++;
            renderText();
-       } 
+       }
        else {
            if (sceneData.choices) {
                showChoices(sceneData.choices);
-           } 
+           }
            else if (sceneData.nextScene) {
-               loadScene(sceneData.nextScene);
-           } 
+               loadSceneAsync(sceneData.nextScene);
+           }
            else {
                if(confirm("物語は結末を迎えました。タイトルへ戻りますか？")) {
                    location.reload();
