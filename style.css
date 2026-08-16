@@ -1,18 +1,24 @@
 /* 基本設定 */
-* {
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-body {
+html, body {
     font-family: 'Hiragino Mincho ProN', 'Yu Mincho', '游明朝', serif;
     background: #000;
     color: #fff;
     overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overscroll-behavior: none;
 }
 
 .hidden {
@@ -89,6 +95,19 @@ body {
     font-style: italic;
 }
 
+.game-btn {
+    min-height: 48px;
+    cursor: pointer;
+    transition: transform 0.08s ease, opacity 0.08s ease;
+    will-change: transform;
+}
+
+.game-btn:active,
+.game-btn.is-pressed {
+    transform: scale(0.92);
+    opacity: 0.88;
+}
+
 .start-button {
     display: flex;
     align-items: center;
@@ -101,10 +120,18 @@ body {
     font-size: clamp(1rem, 4vw, 1.3rem);
     cursor: pointer;
     border-radius: 50px;
-    transition: all 0.3s ease;
+    transition: transform 0.08s ease, opacity 0.08s ease, box-shadow 0.3s ease, background 0.3s ease;
     font-family: inherit;
     margin: 3rem auto 0;
     transform: scale(1.2);
+}
+
+.continue-button {
+    margin-top: 1rem;
+    transform: scale(1);
+    font-size: clamp(0.85rem, 3vw, 1rem);
+    background: rgba(120, 80, 160, 0.25);
+    border-color: rgba(180, 140, 220, 0.6);
 }
 
 .start-button:hover {
@@ -116,7 +143,48 @@ body {
 /* ゲーム画面 */
 #gameScreen { position: relative; }
 .game-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-.scene-bg { width: 100%; height: 100%; object-fit: cover; }
+.scene-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.6s ease;
+}
+
+.scene-bg.is-fading {
+    opacity: 0.15;
+}
+
+.effect-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 15;
+    pointer-events: none;
+}
+
+.ending-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 30;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+}
+
+.ending-overlay.effect-white {
+    background: #fff;
+    opacity: 1;
+}
+
+.ending-overlay.effect-black {
+    background: #000;
+    opacity: 1;
+}
 
 /* テキスト演出: 震える文字 */
 .shaking-text {
@@ -226,6 +294,7 @@ body {
     -webkit-backdrop-filter: blur(10px);
     border-top: 2px solid rgba(255, 107, 107, 0.3);
     padding: clamp(1rem, 3vw, 2rem);
+    padding-bottom: calc(clamp(1rem, 3vw, 2rem) + env(safe-area-inset-bottom, 0px));
     z-index: 5;
     display: flex;
     flex-direction: column;
@@ -294,9 +363,15 @@ body {
     text-align: center;
     cursor: pointer;
     border-radius: 10px;
-    transition: all 0.3s ease;
+    transition: transform 0.08s ease, opacity 0.08s ease, background 0.3s ease, border-color 0.3s ease;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    min-height: 48px;
+}
+
+.choice-item:active {
+    transform: scale(0.96);
+    opacity: 0.9;
 }
 .choice-item:hover {
     background: rgba(255, 107, 107, 0.2);
@@ -308,11 +383,11 @@ body {
 /* UI controls */
 .game-ui {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: calc(1rem + env(safe-area-inset-top, 0px));
+    right: calc(1rem + env(safe-area-inset-right, 0px));
     display: flex;
     gap: 0.5rem;
-    z-index: 10;
+    z-index: 40;
 }
 .ui-button {
     background: rgba(0, 0, 0, 0.7);

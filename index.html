@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>魔王城と母</title>
     <link rel="stylesheet" href="style.css">
     <meta property="og:title" content="魔王城と母">
@@ -19,7 +19,8 @@
             <div class="title-text">
                 <h1 class="game-title">魔王城と母</h1>
                 <p class="subtitle">〜 狂気か、奇跡か 〜</p>
-                <button id="startBtn" class="start-button">物語を始める</button>
+                <button id="startBtn" class="start-button game-btn">物語を始める</button>
+                <button id="continueBtn" class="start-button game-btn continue-button hidden">記憶を辿る</button>
             </div>
         </div>
     </div>
@@ -28,9 +29,19 @@
         <div class="game-bg">
             <img id="backgroundImage" class="scene-bg" src="./images/sick.png" alt="シーン背景">
         </div>
-        
+
+        <canvas id="effectCanvas" class="effect-canvas" aria-hidden="true"></canvas>
+
         <div id="noiseOverlay" class="noise-overlay hidden"></div>
-        
+        <div id="endingOverlay" class="ending-overlay hidden"></div>
+
+        <div id="notificationArea" class="notification-area" aria-live="polite"></div>
+
+        <div class="game-ui">
+            <button id="muteBtn" class="ui-button game-btn" type="button" aria-label="音声切替">🔊</button>
+            <button id="saveBtn" class="ui-button game-btn" type="button" aria-label="記憶を刻む">💾</button>
+        </div>
+
         <div id="textWindow" class="text-window">
             <div id="speakerName" class="speaker-name">名前</div>
             <div id="gameText" class="game-text">ここにテキストが表示されます。</div>
@@ -38,8 +49,7 @@
         </div>
 
         <div id="choicesContainer" class="choices-container hidden">
-            <div class="choices-wrapper">
-                </div>
+            <div class="choices-wrapper"></div>
         </div>
     </div>
 
