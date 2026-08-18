@@ -6,7 +6,7 @@
     <title>魔王城と母</title>
     <link rel="stylesheet" href="style.css">
     <meta property="og:title" content="魔王城と母">
-    <meta property="og:description" content="スマホ・PCのブラウザで遊べる無料ゲームです。インストール不要！">
+    <meta property="og:description" content="息子を救うため、母は魔王城へ向かう。狂気か、奇跡か。">
     <meta property="og:url" content="https://titan11111.github.io/034-demon_castle/">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary">
@@ -19,14 +19,14 @@
             <div class="title-text">
                 <h1 class="game-title">魔王城と母</h1>
                 <p class="subtitle">〜 狂気か、奇跡か 〜</p>
-                <button id="startBtn" class="start-button game-btn">物語を始める</button>
-                <button id="continueBtn" class="start-button game-btn continue-button hidden">記憶を辿る</button>
+                <button id="startBtn" class="start-button game-btn" type="button">物語を始める</button>
+                <button id="continueBtn" class="start-button game-btn continue-button hidden" type="button">記憶を辿る</button>
             </div>
         </div>
     </div>
 
     <div id="gameScreen" class="screen hidden">
-        <div class="game-bg">
+        <div class="game-bg" id="gameBg">
             <img id="backgroundImage" class="scene-bg" src="./images/sick.png" alt="シーン背景">
         </div>
 
@@ -38,6 +38,7 @@
         <div id="notificationArea" class="notification-area" aria-live="polite"></div>
 
         <div class="game-ui">
+            <button id="logBtn" class="ui-button game-btn" type="button" aria-label="回想">回想</button>
             <button id="muteBtn" class="ui-button game-btn" type="button" aria-label="音声切替">🔊</button>
             <button id="saveBtn" class="ui-button game-btn" type="button" aria-label="記憶を刻む">💾</button>
         </div>
@@ -51,8 +52,21 @@
         <div id="choicesContainer" class="choices-container hidden">
             <div class="choices-wrapper"></div>
         </div>
+
+        <div id="backlogPanel" class="backlog-panel hidden" data-scrollable>
+            <div class="backlog-head">回想</div>
+            <div id="backlogList" class="backlog-list" data-scrollable></div>
+            <button id="backlogClose" class="game-btn backlog-close" type="button">閉じる</button>
+        </div>
+
+        <div id="endingGate" class="ending-gate hidden">
+            <p id="endingGateLabel" class="ending-gate-label">物語は結末を迎えた</p>
+            <button id="endingReturnBtn" class="start-button game-btn" type="button">記憶の扉</button>
+        </div>
     </div>
 
+    <script src="story.js"></script>
+    <script src="audio.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

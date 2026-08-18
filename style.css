@@ -1,3 +1,9 @@
+@property --madness {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0;
+}
+
 /* 基本設定 */
 *, *::before, *::after {
     margin: 0;
@@ -96,9 +102,11 @@ html, body {
 }
 
 .game-btn {
-    min-height: 48px;
+    min-height: 56px;
+    min-width: 56px;
     cursor: pointer;
-    transition: transform 0.08s ease, opacity 0.08s ease;
+    touch-action: manipulation;
+    transition: transform 0.08s ease, opacity 0.08s ease, filter 0.08s ease;
     will-change: transform;
 }
 
@@ -142,12 +150,43 @@ html, body {
 
 /* ゲーム画面 */
 #gameScreen { position: relative; }
-.game-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+.game-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+    filter:
+        hue-rotate(calc(var(--madness) * 10deg))
+        contrast(calc(1 + var(--madness) * 0.07))
+        saturate(calc(1 + var(--madness) * 0.12));
+    transition: filter 0.6s ease;
+}
+#gameScreen.is-injured .game-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 90px rgba(90, 0, 0, 0.55);
+    mix-blend-mode: multiply;
+}
+#gameScreen.is-mad .game-bg::before {
+    content: '';
+    position: absolute;
+    inset: -4%;
+    pointer-events: none;
+    background: rgba(80, 0, 20, calc(var(--madness) * 0.08));
+    mix-blend-mode: color;
+}
 .scene-bg {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: opacity 0.6s ease;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    transition: opacity 0.4s ease;
 }
 
 .scene-bg.is-fading {
@@ -170,20 +209,30 @@ html, body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 30;
+    z-index: 4;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 1.2s ease;
+    transition: opacity 1.2s ease, background 0.8s ease;
 }
 
 .ending-overlay.effect-white {
     background: #fff;
-    opacity: 1;
+    opacity: 0.92;
+}
+
+.ending-overlay.effect-white-soft {
+    background: #fff;
+    opacity: 0.28;
+}
+
+.ending-overlay.effect-true-glow {
+    background: radial-gradient(circle at 50% 40%, rgba(255, 250, 230, 0.55), rgba(255, 255, 255, 0.12));
+    opacity: 0.55;
 }
 
 .ending-overlay.effect-black {
     background: #000;
-    opacity: 1;
+    opacity: 0.72;
 }
 
 /* テキスト演出: 震える文字 */
@@ -209,6 +258,18 @@ html, body {
     text-align: center;
     text-shadow: 2px 2px 0 #000;
     animation: screamImpact 0.2s ease-out;
+}
+.text-blood {
+    color: #ff4d4d;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 0 0 12px rgba(255, 40, 40, 0.7);
+}
+.text-gold {
+    color: #f3d27a;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 0 0 14px rgba(230, 190, 80, 0.75);
 }
 @keyframes screamImpact {
     0% { transform: scale(3); opacity: 0; }
@@ -308,6 +369,21 @@ html, body {
     font-weight: bold;
     margin-bottom: 0.5rem;
     text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+.speaker-name.sp-son { color: #ffc9a3; text-shadow: 0 0 10px rgba(255, 160, 100, 0.5); }
+.speaker-name.sp-mina { color: #b8e0ff; text-shadow: 0 0 10px rgba(140, 200, 255, 0.55); }
+.speaker-name.sp-demon { color: #c9a6ff; text-shadow: 0 0 12px rgba(120, 60, 200, 0.7); }
+.speaker-name.sp-clown { color: #9cff7a; text-shadow: 0 0 10px rgba(120, 255, 80, 0.45); }
+.speaker-name.sp-phantom { color: #ff6b8a; text-shadow: 0 0 10px rgba(255, 40, 80, 0.6); }
+.speaker-name.sp-se { color: #bbb; font-weight: normal; text-shadow: none; }
+.speaker-name.sp-sys { color: #e8d48b; text-shadow: 0 0 10px rgba(220, 180, 80, 0.45); }
+
+.game-text ruby {
+    ruby-position: over;
+}
+.game-text rt {
+    font-size: 0.55em;
+    color: rgba(255, 210, 210, 0.85);
 }
 
 .game-text {
@@ -444,6 +520,92 @@ html, body {
 
 .choice-appear { animation: choiceAppear 0.5s ease-out forwards; }
 @keyframes choiceAppear { from { opacity: 0; transform: translateY(30px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.choice-item.is-remembered::after {
+    content: ' 記憶あり';
+    font-size: 0.7em;
+    color: rgba(200, 170, 255, 0.8);
+}
+
+.backlog-panel {
+    position: absolute;
+    inset: calc(3.5rem + env(safe-area-inset-top, 0px)) 4% calc(2rem + env(safe-area-inset-bottom, 0px));
+    z-index: 55;
+    background: rgba(8, 0, 16, 0.94);
+    border: 1px solid rgba(255, 107, 107, 0.35);
+    border-radius: 14px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    touch-action: pan-y;
+}
+.backlog-head {
+    color: #ffb0b0;
+    margin-bottom: 0.6rem;
+    font-size: 1.05rem;
+}
+.backlog-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    padding-right: 0.4rem;
+}
+.backlog-entry {
+    margin-bottom: 0.85rem;
+    line-height: 1.5;
+}
+.backlog-name {
+    color: #ff8a8a;
+    font-size: 0.85rem;
+    margin-bottom: 0.15rem;
+}
+.backlog-body {
+    color: #eee;
+    font-size: 0.92rem;
+}
+.backlog-close {
+    margin-top: 0.8rem;
+    width: 100%;
+    background: rgba(255, 107, 107, 0.15);
+    border: 1px solid rgba(255, 107, 107, 0.5);
+    color: #fff;
+    border-radius: 10px;
+    font-family: inherit;
+}
+
+.ending-gate {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: calc(18vh + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.55));
+}
+.ending-gate-label {
+    color: #ddd;
+    margin-bottom: 1rem;
+    letter-spacing: 0.08em;
+}
+.ui-button {
+    min-width: 56px;
+    min-height: 56px;
+    font-size: 0.78rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scene-bg,
+    .game-title,
+    .choice-appear,
+    .shaking-text,
+    .noise-overlay {
+        animation: none !important;
+        transition: none !important;
+    }
+}
 
 /* レスポンシブ */
 @media (max-width: 768px) {
