@@ -26,7 +26,7 @@ const KEN_BURNS = {
     'sick.png': { from: 'scale(1) translate(0, 0)', to: 'scale(1.14) translate(0, -4%)', dur: 22000 },
     'palece.png': { from: 'scale(1.04) translate(0, 5%)', to: 'scale(1.16) translate(0, -2%)', dur: 20000 },
     'mina.png': { from: 'scale(1.02)', to: 'scale(1.08)', dur: 14000 },
-    'maou.png': { from: 'scale(1.05) translate(0, 0)', to: 'scale(1.12) translate(0, 3%)', dur: 24000 },
+    'maou.png': { from: 'scale(1.05) translate(0, -2%)', to: 'scale(1.12) translate(0, -2%)', dur: 24000 },
     'forest.png': { from: 'scale(1)', to: 'scale(1.1) translate(-3%, 0)', dur: 18000 },
     'plant.png': { from: 'scale(1.03)', to: 'scale(1.14)', dur: 8000 },
     'gaikotu.png': { from: 'scale(1)', to: 'scale(1.1) translate(2%, 0)', dur: 12000 },

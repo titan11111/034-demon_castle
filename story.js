@@ -4,7 +4,7 @@
        // 【序章：出発】
        // ---------------------------------------------------------
        'prologue_1': {
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/sick.png',
            texts: [
                { name: "主人公", content: "（窓の外では、冷たい雨が降り続いている……）" },
@@ -16,7 +16,7 @@
            nextScene: 'prologue_selection'
        },
        'prologue_selection': { 
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/sick.png',
            texts: [
                { name: "主人公", content: "旅支度を整える。鞄にはもう、あと一つしか物が入らない。" },
@@ -28,7 +28,7 @@
            ]
        },
        'prologue_end': {
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/sick.png',
            texts: [
                { name: "主人公", content: "「……行ってくるね。必ず、お薬を持ち帰るから」" },
@@ -42,7 +42,7 @@
        // 【第1章：帰らずの森】
        // ---------------------------------------------------------
        'forest_entry': {
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/forest.png',
            texts: [
                { name: "主人公", content: "ここが『帰らずの森』……肌を刺すような瘴気（しょうき）が漂っている。" },
@@ -51,7 +51,7 @@
            nextScene: 'branch_path'
        },
        'branch_path': {
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/forest.png',
            texts: [
                { name: "主人公", content: "どちらへ進もうか？" }
@@ -62,7 +62,7 @@
            ]
        },
        'forest_fruit': { 
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/forest.png',
            texts: [
                { name: "主人公", content: "何時間歩いただろう。空腹で目が回りそうだ。" },
@@ -75,7 +75,7 @@
            ]
        },
        'forest_plant': { 
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/plant.png', // 変更: 植物の画像を使用
            texts: [
                { name: "主人公", content: "その時、巨大な植物の蔦（ツタ）が襲いかかってきた！" },
@@ -93,7 +93,7 @@
            falseScene: 'plant_fail'
        },
        'plant_win': {
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/forest.png',
            texts: [
                { name: "主人公", content: "私は持ってきたナイフを一閃させた！" },
@@ -103,7 +103,7 @@
            nextScene: 'castle_view'
        },
        'plant_fail': {
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/forest.png',
            texts: [
                { name: "主人公", content: "武器がない！ 私は素手で蔦を引き剥がそうとした。" },
@@ -115,7 +115,7 @@
            setFlag: 'isInjured'
        },
        'plant_escape': {
-           bgm: './audio/Dust_city.mp3',
+           bgm: './audio/Dust_city.m4a',
            image: './images/forest.png',
            texts: [
                { name: "主人公", content: "私は泥だらけになりながら、無我夢中で走り抜けた。" },
@@ -129,7 +129,7 @@
        // 【第2章：魔王城・侵入】
        // ---------------------------------------------------------
        'castle_view': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/palece.png',
            texts: [
                { name: "主人公", content: "森を抜けると、雷鳴と共に巨大な魔王城が姿を現した。" },
@@ -138,7 +138,7 @@
            nextScene: 'castle_gate'
        },
        'castle_gate': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/palece.png',
            texts: [
                { name: "主人公", content: "巨大な門。鍵はかかっていないが、不自然な静けさだ。" }
@@ -149,7 +149,7 @@
            ]
        },
        'gate_trap': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/palece.png',
            texts: [
                { name: "効果音", content: "プシューッ！" },
@@ -161,7 +161,7 @@
            setFlag: 'isInjured'
        },
        'gate_safe': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/palece.png',
            texts: [
                { name: "主人公", content: "よく見ると、扉の足元に細いワイヤーが張ってあった。" },
@@ -171,7 +171,7 @@
        },
    
        'corridor_encounter': { 
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/gaikotu.png', // 変更: 骸骨の画像を使用
            texts: [
                { name: "主人公", content: "城内は冷え切っている。……前方から、カツン、カツンと硬質な足音が聞こえてきた。" },
@@ -183,7 +183,7 @@
            ]
        },
        'hide_success': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/rouya.png',
            texts: [
                { name: "主人公", content: "息を殺して柱の陰に隠れる。兵士は気づかずに通り過ぎていった。" }
@@ -191,7 +191,7 @@
            nextScene: 'treasure_room'
        },
        'attack_guard': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/gaikotu.png', // 変更: 骸骨の画像を使用
            texts: [
                { name: "主人公", content: "私は近くにあった燭台を掴み、骸骨の頭蓋を打ち砕いた！" },
@@ -204,7 +204,7 @@
        },
    
        'treasure_room': { 
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/treasure.png',
            texts: [
                { name: "主人公", content: "通りがかった部屋には、山のような金銀財宝が積まれていた。" },
@@ -216,7 +216,7 @@
            ]
        },
        'steal_gem': { 
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/piero.png', 
            texts: [
                { name: "主人公", content: "魔除けになりそうな赤い宝石をポケットに入れた。その時——" },
@@ -228,7 +228,7 @@
            nextScene: 'dungeon_entry'
        },
        'ignore_gem': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/treasure.png',
            texts: [
                { name: "主人公", content: "今は金銭など無価値だ。必要なのは息子の命を繋ぐ薬だけ。" },
@@ -241,7 +241,7 @@
        // 【第3章：地下牢のミナ】
        // ---------------------------------------------------------
        'dungeon_entry': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/rouya.png',
            texts: [
                { name: "主人公", content: "地下から、誰かのすすり泣く声が聞こえる……。" },
@@ -250,7 +250,7 @@
            nextScene: 'meet_mina'
        },
        'meet_mina': { 
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/mina.png',
            texts: [
                { name: "ミナ", content: "「ひっ……こ、来ないで……痛いのは嫌……」" },
@@ -262,7 +262,7 @@
            ]
        },
        'mina_friend': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/mina.png',
            texts: [
                { name: "主人公", content: "「怖くないわ。私はあなたを傷つけたりしない」" },
@@ -273,7 +273,7 @@
            setFlag: 'minaTrust'
        },
        'mina_wary': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/mina.png',
            texts: [
                { name: "主人公", content: "（罠かもしれない）私はナイフを隠し持ちながら様子を伺った。" },
@@ -283,7 +283,7 @@
            nextScene: 'stairs_climb'
        },
        'mina_shortcut_offer': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/mina.png',
            texts: [
                { name: "ミナ", content: "「こっちの『死者の谷』を通れば、玉座の裏まで行けるわ」" },
@@ -295,7 +295,7 @@
            ]
        },
        'shortcut_bridge': { 
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/bridge.png',
            texts: [
                { name: "主人公", content: "ミナの案内で古びた吊り橋を渡る。" },
@@ -308,7 +308,7 @@
            ]
        },
        'shortcut_success': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/mina.png',
            texts: [
                { name: "主人公", content: "私はミナの手を掴んだ！ 霊体のはずなのに、確かな温もりがあった。" },
@@ -319,7 +319,7 @@
            setFlag: 'minaSaved'
        },
        'shortcut_fail': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/bridge.png',
            texts: [
                { name: "主人公", content: "私は反射的に対岸へ飛び移った。" },
@@ -330,7 +330,7 @@
            nextScene: 'throne_room'
        },
        'stairs_climb': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/rouya.png',
            texts: [
                { name: "主人公", content: "長い長い階段を登り続ける。足が棒のようだ。" },
@@ -343,7 +343,7 @@
        // 【第4章：試練】
        // ---------------------------------------------------------
        'throne_room': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/maou.png',
            texts: [
                { name: "主人公", content: "扉を開け放つと、玉座には闇を纏った魔王が座していた。" },
@@ -353,7 +353,7 @@
            nextScene: 'demon_dialogue_1'
        },
        'demon_dialogue_1': { 
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/maou.png',
            texts: [
                { name: "魔王", content: "「なぜそこまでして息子を生かそうとする？ 人はいずれ死ぬ運命だ。早いか遅いかの違いでしかない」" }
@@ -365,7 +365,7 @@
     
        },
        'dialogue_logic': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/maou.png',
            texts: [
                { name: "主人公", content: "「親が子を守るのは生物としての本能よ。理屈なんてないわ」" },
@@ -374,7 +374,7 @@
            nextScene: 'demon_dialogue_2'
        },
        'dialogue_emotion': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/maou.png',
            texts: [
                { name: "主人公", content: "「理屈なんてどうでもいい！ 愛しているからよ！ あなたに愛は分からないの！？」" },
@@ -383,7 +383,7 @@
            nextScene: 'demon_dialogue_2'
        },
        'demon_dialogue_2': { 
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/maou.png',
            texts: [
                { name: "魔王", content: "「仮に薬を持ち帰り、息子が生き延びたとしよう。だが成長した息子が、老いたお前を邪魔者扱いし、捨てたらどうする？」" }
@@ -394,7 +394,7 @@
            ]
        },
        'demon_trial_start': { 
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/phantom.png',
            texts: [
                { name: "魔王", content: "「口では何とでも言える。……試してやろう。貴様の精神を破壊する『絶望の幻影』を！」" },
@@ -407,7 +407,7 @@
            falseScene: 'trial_no_item'
        },
        'trial_photo_bonus': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/maou.png',
            texts: [
                { name: "主人公", content: "心が折れそうになったその時、ポケットの写真が熱を持った。" },
@@ -417,7 +417,7 @@
            nextScene: 'final_choice'
        },
        'trial_no_item': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/phantom-face.png',
            texts: [
                { name: "主人公", content: "言葉の刃が胸に突き刺さる。" },
@@ -432,7 +432,7 @@
        // 【最終章：決断】
        // ---------------------------------------------------------
        'final_choice': { 
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/maou.png',
            texts: [
                { name: "魔王", content: "「ほう、耐え抜くか。……よかろう、薬はやろう」", effect: "noise-stop" },
@@ -459,7 +459,7 @@
    
        // --- 【エンディング演出追加・修正版】 ---
        'end_memory_loss': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/minatenn.png',
            texts: [
                { name: "主人公", content: "「……わかったわ。あの子が助かるなら、私の思い出なんて安いものよ」" },
@@ -472,7 +472,7 @@
            nextScene: null
        },
        'battle_start': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/maou.png',
            texts: [
                { name: "主人公", content: "「記憶を奪ったら、あの子を愛し続けられない！ そんな条件、呑めるもんですか！」" },
@@ -490,7 +490,7 @@
            falseScene: 'end_bad_dead'
        },
        'end_true': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/minatenn.png',
            texts: [
                { name: "主人公", content: "「ミナ！ お願い、力を貸して！」" },
@@ -505,7 +505,7 @@
            nextScene: null
        },
        'end_sacrifice': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/sick.png',
            texts: [
                { name: "主人公", content: "私は自分の生命力を魔力に変えて特攻した。" },
@@ -518,7 +518,7 @@
            nextScene: null
        },
        'end_remembered': {
-           bgm: './audio/Songs_of_the_Soulless.mp3',
+           bgm: './audio/Songs_of_the_Soulless.m4a',
            image: './images/remembered.png',
            texts: [
                { name: "主人公", content: "「……いいわ。あの子が生きるなら、私が忘れても構わない」" },
@@ -532,7 +532,7 @@
            nextScene: null
        },
        'end_amusement': {
-           bgm: './audio/casle.mp3',
+           bgm: './audio/casle.m4a',
            image: './images/piero.png',
            texts: [
                { name: "主人公", content: "「記憶なんか渡さない。薬も、あの子も、全部私のものよ！」" },
